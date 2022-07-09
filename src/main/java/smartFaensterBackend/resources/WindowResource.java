@@ -61,7 +61,7 @@ public class WindowResource {
     @Tag(name = "POST endpoints")
     @POST
     @Transactional
-    @Path("/register")
+    @Path("register")
     public Response registerWindow(@Context UriInfo uriInfo) {
         Window safedWindow;
         safedWindow = windowService.addOneWindow();
@@ -78,12 +78,11 @@ public class WindowResource {
     @Tag(name = "POST endpoints")
     @POST
     @Transactional
-    @Path("/status")
-    public Response setStatus(boolean isOpen, long id, @Context UriInfo uriInfo) {
-        Window safedWindow;
-        safedWindow = windowService.setStatus(id,isOpen);
+    @Path("status")
+    public Response setStatus(Window window, @Context UriInfo uriInfo) {
+        Window safedWindow = windowService.setStatus(window.id,window.open);
         
-        if (safedWindow.isOpen==isOpen){
+        if (safedWindow.id!=window.id){
             throw new BadRequestException();
     } 
     UriBuilder builder = uriInfo.getAbsolutePathBuilder();
@@ -94,15 +93,34 @@ public class WindowResource {
     @Tag(name = "GET endpoints")
     @GET
     @Transactional
-    @Path("/status")
+    @Path("status/{id}")
     public Response getStatus(long id, @Context UriInfo uriInfo) {
-        boolean isOpen = windowService.getWindowById(id).isOpen;
-        
+
+        Window window = windowService.getWindowById(id);
+        boolean isOpen = window.open;
     //     if (false){
     //         throw new BadRequestException();
     // } 
     UriBuilder builder = uriInfo.getAbsolutePathBuilder().path(Boolean.toString(isOpen));
     return Response.accepted(builder.build()).build();    
+        
+    }
+
+    @Tag(name = "POST endpoints")
+    @POST
+    @Transactional
+    @Path("update")
+    public Response updateWindows(List<Window> windowsListToUpdate, @Context UriInfo uriInfo) {
+        
+        List<Window> safedWindowsList;
+        safedWindowsList= windowService.saveWindowsList(windowsListToUpdate);
+        
+        if (safedWindowsList.size()>0) {
+            UriBuilder builder = uriInfo.getAbsolutePathBuilder();
+            return Response.created(builder.build()).build();
+        } else {
+            throw new BadRequestException();
+        }  
         
     }
 
