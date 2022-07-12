@@ -6,6 +6,7 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -19,6 +20,7 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.jboss.resteasy.reactive.server.spi.RuntimeConfiguration.Body;
 
 import smartFaensterBackend.services.WindowService;
 import smartFaensterBackend.entities.Window;
@@ -47,10 +49,10 @@ public class WindowResource {
     @POST
     @Transactional
     public Response addWindow(@Valid List<Window> windowsList, @Context UriInfo uriInfo) {
-        List<Window> safedWindowsList;
-        safedWindowsList= windowService.saveWindowsList(windowsList);
+
+        windowService.saveWindowsList(windowsList);
         
-        if (safedWindowsList.size()>0) {
+        if (this.windowService.getWindows().size()>0) {
             UriBuilder builder = uriInfo.getAbsolutePathBuilder();
             return Response.created(builder.build()).build();
         } else {
@@ -80,12 +82,12 @@ public class WindowResource {
     @Transactional
     @Path("status")
     public Response setStatus(Window window, @Context UriInfo uriInfo) {
-        Window safedWindow = windowService.setStatus(window.id,window.open);
+        Window safedWindow = windowService.setStatus(window);
         
         if (safedWindow.id!=window.id){
             throw new BadRequestException();
     } 
-    UriBuilder builder = uriInfo.getAbsolutePathBuilder();
+    UriBuilder builder = uriInfo.getAbsolutePathBuilder().path(Boolean.toString(safedWindow.open));
     return Response.accepted(builder.build()).build();    
         
     }
@@ -97,11 +99,11 @@ public class WindowResource {
     public Response getStatus(long id, @Context UriInfo uriInfo) {
 
         Window window = windowService.getWindowById(id);
-        boolean isOpen = window.open;
+        boolean open = window.open;
     //     if (false){
     //         throw new BadRequestException();
     // } 
-    UriBuilder builder = uriInfo.getAbsolutePathBuilder().path(Boolean.toString(isOpen));
+    UriBuilder builder = uriInfo.getAbsolutePathBuilder().path(Boolean.toString(open));
     return Response.accepted(builder.build()).build();    
         
     }
@@ -112,10 +114,10 @@ public class WindowResource {
     @Path("update")
     public Response updateWindows(List<Window> windowsListToUpdate, @Context UriInfo uriInfo) {
         
-        List<Window> safedWindowsList;
-        safedWindowsList= windowService.saveWindowsList(windowsListToUpdate);
+        windowService.saveWindowsList(windowsListToUpdate);
+
         
-        if (safedWindowsList.size()>0) {
+        if (this.windowService.getWindows().size()>0) {
             UriBuilder builder = uriInfo.getAbsolutePathBuilder();
             return Response.created(builder.build()).build();
         } else {
@@ -125,24 +127,18 @@ public class WindowResource {
     }
 
 
-    // @Tag(name = "Put endpoints")
-    // @Operation(description = "Set the windowstate", summary = "Set a window state Open it = true | close it = false")
-    // @APIResponse(responseCode = "200", description = "Successful")
-    // @APIResponse(responseCode = "500", description = "Unsuccessful")
-    // @PUT
-    // @Transactional
-    // public Response setState(WindowDto windowDto) {
-    //     Window window = new Window();
-    //     Window updatedWindow;
-    //     window.id = windowDto.getId();
-    //     window.stateOpen = windowDto.isStateOpen();
-    //     window.windowName = windowDto.getWindowName();
-    //     updatedWindow = windowService.setState(window, window.stateOpen);
-    //     if (updatedWindow.isPersistent()) {
-    //         return Response.ok().build();
-    //     } else {
-    //         throw new InternalServerErrorException(Response.status(500).build());
-    //     }
-    // }
+    @Tag(name = "Delete endpoints")
+    @APIResponse(responseCode = "200", description = "Successful")
+    @APIResponse(responseCode = "500", description = "Unsuccessful")
+    @DELETE
+    @Transactional
+    @Path("delete/{id}")
+    public boolean delete(long id) {
+        boolean success = true;
+
+            success = Window.deleteById(id);
+        
+        return success;
+    }
 
 }

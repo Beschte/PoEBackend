@@ -1,15 +1,12 @@
 package smartFaensterBackend.entities;
 
-import java.util.List;
 
 import javax.persistence.Column;
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.validation.constraints.NotBlank;
-import javax.ws.rs.DefaultValue;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 
@@ -26,10 +23,8 @@ public class Window extends PanacheEntityBase {
 
     @Column(name = "open")
     public boolean open;
-    @Column(name ="selected")
-    public boolean selected;
-    @Column(name = "timerPosition")
-    public int timerPosition; // 0 = Now / 1 = 5min / 2 = 10 / 3 = 15 / 4 = 20 / 5 = 30
+    // @Column(name = "timerPosition")
+    // public int timerPosition; // 0 = Nothing / 1 = Now / 2 = 5min / 3 = 10 / 4 = 15 / 5 = 20 / 6 = 30
 
     // // @ElementCollection
     // public List<Window> windowsList;
@@ -37,19 +32,15 @@ public class Window extends PanacheEntityBase {
     public Window() {
     }
 
-    public Window( @NotBlank String windowName, boolean open, boolean selected, int timerPosition) {
+    public Window( @NotBlank String windowName, boolean open) {
         this.windowName = windowName;
         this.open = open;
-        this.selected = selected;
-        this.timerPosition = timerPosition;
     }
 
-    public Window( @NotBlank String windowName, boolean isOpen, boolean selected, int timerPosition, long id) {
+    public Window( @NotBlank String windowName, boolean open, long id) {
         this.windowName = windowName;
-        this.open = isOpen;
-        this.selected = selected;
-        this.timerPosition = timerPosition;
-        this.id = id;
+        this.open = open;
+         this.id = id;
     }
 
     // public long getId() {
